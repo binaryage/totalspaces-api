@@ -1,0 +1,49 @@
+= TotalSpaces - Ruby API bindings for TotalSpaces from BinaryAge
+
+== 2013-02 At present this is pre-release, there is no public version of TotalSpaces containing the API.
+
+This gem enables you to get information from and to control {TotalSpaces}[link:http://totalspaces.binaryage.com]
+
+It is the officially supported way of using the API library libtotalspacesapi, and the required dylib 
+comes bundled with this gem. This gem uses {Ruby-FFI}[link:https://github.com/ffi/ffi] to call the functions in the dylib.
+
+You may use this gem in various ways. For instance, you could:
+
+* Display a message or alert when a particular space is moved to
+
+* Automatically change the name of spaces depending on what apps are in them
+
+* Record which spaces certain windows are on, and restoring those windows to those spaces when the owning app restarts
+
+* Trigger moving certain windows between spaces
+
+API support, and support for this gem starts with TotalSpaces v1.1.4. The API is a premium feature,
+and will only work with registered versions of TotalSpaces.
+
+== Download and installation
+
+The latest version of the TotalSpaces gem can be installed with RubyGems:
+
+  % [sudo] gem install totalspaces
+
+Source code can be downloaded on GitHub
+
+* https://github.com/binaryage/totalspaces-api
+
+
+== Documentation
+
+* In progress
+
+== License
+
+The TotalSpaces gem is released under the MIT license:
+
+* http://www.opensource.org/licenses/MIT
+
+The source code of the dylib is not available at this time.
+
+
+== Support and feature requests
+
+* http://support.binaryage.com
