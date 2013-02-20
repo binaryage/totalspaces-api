@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = %q{totalspaces}
-  s.version = "1.0"
+  s.version = "0.3"
 
   s.authors = ["Stephen Sykes"]
   s.date = %q{2013-02-02}
@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
     "lib/libtotalspacesapi.dylib",
     "lib/TSLib.h"
   ]
-  s.homepage = %q{http://github.com/binaryage/totalspaces-api}
+  s.homepage = %q{https://github.com/binaryage/totalspaces-api/tree/master/ruby}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.summary = %q{TotalSpaces control from ruby}
