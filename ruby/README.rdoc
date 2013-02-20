@@ -6,6 +6,10 @@ This gem enables you to get information from and to control {TotalSpaces}[link:h
 
 It is the officially supported way of using the API library libtotalspacesapi, and the required dylib 
 comes bundled with this gem. This gem uses {Ruby-FFI}[link:https://github.com/ffi/ffi] to call the functions in the dylib.
+You'll need a sane ruby and compilation environment to install ruby-ffi - it probably won't install immediately with the
+ruby that comes with Mountain Lion because none of the compilation tools are present. We use {homebrew}[link:http://mxcl.github.com/homebrew/]
+and {rbenv}[link:https://github.com/sstephenson/rbenv/] to manage our ruby scripting environment.
+{This simple guide}[link:http://jacobswanner.com/2012/07/13/ruby-1-9-3-without-gcc.html] may help if you are new to this.
 
 You may use this gem in various ways. For instance, you could:
 
