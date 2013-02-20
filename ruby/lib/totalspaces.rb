@@ -36,8 +36,12 @@ module TSApi  #:nodoc:
   attach_function :tsapi_numberOfFullScreensInGrid, [], :uint
   attach_function :tsapi_numberOfDesktops, [], :uint
   attach_function :tsapi_dashboardIsASpace, [], :bool
+  
   attach_function :tsapi_definedRows, [], :uint
   attach_function :tsapi_definedColumns, [], :uint
+  
+  attach_function :tsapi_setDefinedRows, [:uint], :bool
+  attach_function :tsapi_setDefinedColumns, [:uint], :bool
   
   attach_function :tsapi_moveToSpace, [:uint], :bool
   attach_function :tsapi_setNameForSpace, [:uint, :string], :bool
@@ -54,9 +58,17 @@ module TSApi  #:nodoc:
   attach_function :tsapi_freeWindowList, [:pointer], :void
   
   attach_function :tsapi_moveWindowToSpace, [:uint, :uint], :bool
+  
+  attach_function :tsapi_moveSpaceToPosition, [:uint, :uint], :bool
+  
+  attach_function :tsapi_addDesktops, [:uint], :bool
+  attach_function :tsapi_removeDesktops, [:uint], :bool
 end
 
 module TotalSpaces
+
+  MAX_DESKTOPS = 16
+  UNUSED_SPACE_NUMBER_OFFSET = 100
 
   #--
   # See tslib.h for the structures returned by the C API
@@ -96,6 +108,12 @@ module TotalSpaces
     #
     #   puts "libTotalSpaces version: #{TotalSpaces.lib_total_spaces_version}"
     #
+    #   if TotalSpaces.lib_total_spaces_version != TotalSpaces.api_version
+    #     puts "Comms error!"
+    #     exit(1)
+    #   end
+    #
+    #
     def lib_total_spaces_version
       string_and_free(TSApi.tsapi_libTotalSpacesVersion)
     end
@@ -104,6 +122,11 @@ module TotalSpaces
     # You should be using the same dylib version as that returned by the this call
     #
     #   puts "TotalSpaces API version: #{TotalSpaces.api_version}"
+    #
+    #   if TotalSpaces.lib_total_spaces_version != TotalSpaces.api_version
+    #     puts "Comms error!"
+    #     exit(1)
+    #   end
     #
     def api_version
       string_and_free(TSApi.tsapi_apiVersion)
@@ -197,10 +220,34 @@ module TotalSpaces
     def grid_columns
       TSApi.tsapi_definedColumns
     end
+
+    # Sets the number of rows defined in TotalSpaces.
+    #
+    # This does not change the actual number of desktops present, you should 
+    # call add_desktops or remove_desktops as appropriate after changing the number
+    # of rows.
+    #
+    #   TotalSpaces.set_grid_rows(3)
+    #
+    def set_grid_rows(rows)
+      TSApi.tsapi_setDefinedRows(rows)
+    end
     
-    # Command TotalSpaces to switch to the given space number
-    # Returns false if the space number was invalid
-    # The on_space_change notification will be sent
+    # Sets the number of columns defined in TotalSpaces.
+    #
+    # This does not change the actual number of desktops present, you should 
+    # call add_desktops or remove_desktops as appropriate after changing the number
+    # of columns.
+    #
+    #   TotalSpaces.set_grid_columns(3)
+    #
+    def set_grid_columns(columns)
+      TSApi.tsapi_setDefinedColumns(columns)
+    end
+    
+    # Command TotalSpaces to switch to the given space number.
+    # Returns false if the space number was invalid.
+    # The on_space_change notification will be sent.
     #
     #   TotalSpaces.move_to_space(1)
     #
@@ -208,10 +255,10 @@ module TotalSpaces
       TSApi.tsapi_moveToSpace(space_number)
     end
     
-    # Set the name for a space
-    # Note that using this command will cause a layout notification to be sent
-    # if the new name was different from that previously set
-    # The maximum length for a name is 255 bytes
+    # Set the name for a space.
+    # Note that using this command will cause a layout notification to be sent.
+    # if the new name was different from that previously set.
+    # The maximum length for a name is 255 bytes.
     #
     #   TotalSpaces.set_name_for_space(1, "Home")
     #
@@ -219,28 +266,30 @@ module TotalSpaces
       TSApi.tsapi_setNameForSpace(space_number, name)
     end
     
-    # Register for notifications on space change
+    # Register for notifications on space change.
     # The given block will be called whenever you move from one space to another. The arguments are
-    # the space number you moved from, and the one you are moving to
+    # the space number you moved from, and the one you are moving to.
     #
     #   TotalSpaces.on_space_change {|from, to| puts "Moving from space #{from} to space #{to}";}
     #
     # There can only be one block registered at any time, the most recently registered one will
     # be called.
+    # This callback is called just before the space actually changes - current_space will still 
+    # report the from space.
     #
     def on_space_change(&block)
-      $tsapi_on_space_change_block = block  # prevent CG
+      $tsapi_on_space_change_block = block  # prevent GC
       TSApi.tsapi_setSpaceWillChangeCallback(block)
     end
     
-    # Cancel the on_space_change notification
+    # Cancel the on_space_change notification.
     #
     def cancel_on_space_change
       $tsapi_on_space_change_block = nil
       TSApi.tsapi_unsetSpaceWillChangeCallback
     end
 
-    # Register for notifications on layout change
+    # Register for notifications on layout change.
     # The given block will be called whenever the layout changes - this could be due to making an app
     # fullscreen, changing a space name, or changing the layout of the TotalSpaces grid. There are no
     # arguments passed to the block.
@@ -254,7 +303,7 @@ module TotalSpaces
     # be called.
     #
     def on_layout_change(&block)
-      $tsapi_on_layout_change_block = block  # prevent CG
+      $tsapi_on_layout_change_block = block  # prevent GC
       TSApi.tsapi_setLayoutChangedCallback(block)
     end
     
@@ -280,7 +329,6 @@ module TotalSpaces
     #     TotalSpaces.move_window_to_space(front_window[:window_id], TotalSpaces.current_space + 1)
     #   end
     #
-    end
     def window_list
       result = []
       list = TSApi.tsapi_windowList
@@ -313,6 +361,46 @@ module TotalSpaces
     #
     def move_window_to_space(window_id, space_number)
       TSApi.tsapi_moveWindowToSpace(window_id, space_number)
+    end
+    
+    # Move space to a new position
+    # You cannot move a space to position 1, and you cannot move the first
+    # space anywhere else - it is fixed.
+    # You cannot move full screen apps around with this method, only normal desktops
+    # Returns false if the space_number or position_number is not valid.
+    #
+    #   TotalSpaces.move_space_to_position(4, 2)
+    #
+    def move_space_to_position(space_number, position_number)
+      TSApi.tsapi_moveSpaceToPosition(space_number, position_number)
+    end
+    
+    # Add desktops
+    # There can be at most 16 desktops
+    # Returns true on success, false if number_to_add was zero, or would result 
+    # in more than 16 desktops.
+    # The on_layout_change notification will be sent if a changed was made.
+    #
+    #   TotalSpaces.add_desktops(1)
+    #
+    def add_desktops(number_to_add)
+      TSApi.tsapi_addDesktops(number_to_add)
+    end
+    
+    # Remove desktops
+    # The highest numbered desktops are removed.
+    # Removing a desktop you are currently on will result in TotalSpaces switching to
+    # another dektop.
+    # Any windows present on a desktop being removed will be moved to one of the
+    # remaining desktops.
+    # Returns true on success, false if number_to_remove was zero or would result in less
+    # than 1 desktop remaining.
+    # The on_layout_change notification will be sent if a change was made.
+    #
+    # TotalSpaces.remove_desktops(1)
+    #
+    def remove_desktops(number_to_remove)
+      TSApi.tsapi_removeDesktops(number_to_remove)
     end
   end
 end
