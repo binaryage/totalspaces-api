@@ -1,9 +1,59 @@
-# TotalSpaces - control TotalSpaces from Ruby
-# This gem provides a number of ways to control TotalSpaces. It is intended to be used
-# to add functionality to TotalSpaces, or to use your spaces and desktops in
-# creative ways.
+# = TotalSpaces - Ruby API bindings for TotalSpaces from BinaryAge
 #
-# === Examples
+# == 2013-02 At present this is pre-release, there is no public version of TotalSpaces containing the API.
+#
+# This gem enables you to get information from and to control {TotalSpaces}[link:http://totalspaces.binaryage.com]
+#
+# It is the officially supported way of using the API library libtotalspacesapi, and the required dylib 
+# comes bundled with this gem. This gem uses {Ruby-FFI}[link:https://github.com/ffi/ffi] to call the functions in the dylib.
+# You'll need a sane ruby and compilation environment to install ruby-ffi - it probably won't install immediately with the
+# ruby that comes with Mountain Lion because none of the compilation tools are present. We use {homebrew}[link:http://mxcl.github.com/homebrew/]
+# and {rbenv}[link:https://github.com/sstephenson/rbenv/] to manage our ruby scripting environment.
+# {This simple guide}[link:http://jacobswanner.com/2012/07/13/ruby-1-9-3-without-gcc.html] may help if you are new to this.
+#
+# You may use this gem in various ways. For instance, you could:
+#
+# * Display a message or alert when a particular space is moved to
+#
+# * Automatically change the name of spaces depending on what apps are in them
+#
+# * Record which spaces certain windows are on, and restoring those windows to those spaces when the owning app restarts
+#
+# * Trigger moving certain windows between spaces
+#
+# API support, and support for this gem starts with TotalSpaces v1.1.4. The API is a premium feature,
+# and will only work with registered versions of TotalSpaces.
+#
+# == Download and installation
+#
+# The latest version of the TotalSpaces gem can be installed with RubyGems:
+#
+#  % [sudo] gem install totalspaces
+#
+# Source code can be downloaded on GitHub
+#
+# * https://github.com/binaryage/totalspaces-api
+#
+#
+# == Documentation
+#
+# * In progress
+#
+# == License
+#
+# The TotalSpaces gem is released under the MIT license:
+#
+# * http://www.opensource.org/licenses/MIT
+#
+# The source code of the dylib is not available at this time.
+#
+#
+# == Support and feature requests
+#
+# * http://support.binaryage.com
+#
+#
+# == Examples
 #   require 'totalspaces'
 #   
 #   TotalSpaces.on_space_change {|from, to| puts "Moving from space #{from} to space #{to}";}
@@ -270,7 +320,9 @@ module TotalSpaces
     # The given block will be called whenever you move from one space to another. The arguments are
     # the space number you moved from, and the one you are moving to.
     #
-    #   TotalSpaces.on_space_change {|from, to| puts "Moving from space #{from} to space #{to}";}
+    #   TotalSpaces.on_space_change {|from, to| puts "Moving from space #{from} to space #{to}"}
+    #   
+    #   sleep
     #
     # There can only be one block registered at any time, the most recently registered one will
     # be called.
@@ -294,7 +346,10 @@ module TotalSpaces
     # fullscreen, changing a space name, or changing the layout of the TotalSpaces grid. There are no
     # arguments passed to the block.
     #
+    #   
     #   TotalSpaces.on_layout_change {puts "Spaces changed"}
+    #   
+    #   sleep
     #
     # When you get a notification from this method, you should re-fetch any information about the spaces
     # that you may be storing.
@@ -397,7 +452,7 @@ module TotalSpaces
     # than 1 desktop remaining.
     # The on_layout_change notification will be sent if a change was made.
     #
-    # TotalSpaces.remove_desktops(1)
+    #   TotalSpaces.remove_desktops(1)
     #
     def remove_desktops(number_to_remove)
       TSApi.tsapi_removeDesktops(number_to_remove)
