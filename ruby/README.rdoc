@@ -37,7 +37,7 @@ Source code can be downloaded on GitHub
 
 == Documentation
 
-{module TotalSpaces}[link:TotalSpaces.html]
+{module TotalSpaces}[link:http://binaryage.github.io/totalspaces-api/ruby/rdoc/TotalSpaces.html]
 
 == Examples
    require 'totalspaces'
