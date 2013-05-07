@@ -21,7 +21,7 @@ You may use this gem in various ways. For instance, you could:
 
 * Trigger moving certain windows between spaces
 
-API support, and support for this gem starts with TotalSpaces v1.1.4. The API is a premium feature,
+API support, and support for this gem starts with TotalSpaces v1.2. The API is a premium feature,
 and will only work with registered versions of TotalSpaces.
 
 == Download and installation
