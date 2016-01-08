@@ -8,7 +8,7 @@
 //  The API is a premium feature, and will only work with registered versions of TotalSpaces.
 //
 
-#ifndef totalspacesapi_tslib
+#ifndef totalspacesapi_tslib_h
 #define totalspacesapi_tslib_h
 
 #import <Foundation/Foundation.h>
